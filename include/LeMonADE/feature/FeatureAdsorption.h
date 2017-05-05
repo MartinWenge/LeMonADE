@@ -55,32 +55,10 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
  * Adsorption energie per monomer is used to calculate the move probability if monoer is on the adsorbing wall
 **/
 
-template<class IngredientsType>
 class FeatureAdsorption:public Feature
 {
 
 private:
-  //! adsorption energy for x-Wall adsorption
-  double adsorptionEnergyX;
-  
-  //! probability calculated from Boltzmann criteria and adsorption energy for x-Wall adsorption
-  double probabilityX;
-  
-  //! adsorption energy for y-Wall adsorption
-  double adsorptionEnergyY;
-  
-  //! probability calculated from Boltzmann criteria and adsorption energy for y-Wall adsorption
-  double probabilityY;
-  
-  //! adsorption energy for z-Wall adsorption
-  double adsorptionEnergyZ;
-  
-  //! probability calculated from Boltzmann criteria and adsorption energy for z-Wall adsorption
-  double probabilityZ;
-  
-  //! checker if adsorption energy is set
-  bool energyIsSetX;
-  
   //! boolean for x-Wall adsorption
   bool adsorptionX;
   
@@ -89,6 +67,28 @@ private:
   
   //! boolean for z-Wall adsorption
   bool adsorptionZ;
+  
+  //! adsorption energy for x-Wall adsorption
+  double adsorptionEnergyX;
+  
+  //! adsorption energy for y-Wall adsorption
+  double adsorptionEnergyY;
+  
+  //! adsorption energy for z-Wall adsorption
+  double adsorptionEnergyZ;
+  
+  //! probability calculated from Boltzmann criteria and adsorption energy for x-Wall adsorption
+  double probabilityX;
+  
+  //! probability calculated from Boltzmann criteria and adsorption energy for y-Wall adsorption
+  double probabilityY;
+  
+  //! probability calculated from Boltzmann criteria and adsorption energy for z-Wall adsorption
+  double probabilityZ;
+  
+  //! checker if adsorption energy is set
+  bool energyIsSet;
+ 
 
 public:
 
@@ -120,6 +120,7 @@ public:
     adsorptionEnergyX=ae_;
     energyIsSet=true;
     probabilityX=std::exp(-ae_);
+    adsorptionX=true;
   }
   //! getter function of adsorption bool in x direction
   bool getAdsorptionX() const{return adsorptionX;}
@@ -134,6 +135,7 @@ public:
     adsorptionEnergyY=ae_;
     energyIsSet=true;
     probabilityY=std::exp(-ae_);
+    adsorptionY=true;
   }
   //! getter function of adsorption bool in y direction
   bool getAdsorptionY() const{return adsorptionY;}
@@ -148,6 +150,7 @@ public:
     adsorptionEnergyZ=ae_;
     energyIsSet=true;
     probabilityZ=std::exp(-ae_);
+    adsorptionZ=true;
   }
   //! getter function of adsorption bool in z direction
   bool getAdsorptionZ() const{return adsorptionZ;}
@@ -169,8 +172,7 @@ public:
 /**
  * @brief Constructor
  **/
-template<class IngredientsType>
-FeatureAdsorption<IngredientsType>::FeatureAdsorption():
+FeatureAdsorption::FeatureAdsorption():
   adsorptionX(false), adsorptionY(false), adsorptionZ(false),
   adsorptionEnergyX(0.0), adsorptionEnergyY(0.0),adsorptionEnergyZ(0.0),
   probabilityX(1.0), probabilityY(1.0), probabilityZ(1.0), 
@@ -185,7 +187,7 @@ FeatureAdsorption<IngredientsType>::FeatureAdsorption():
  * @return true (always)
  **/
 template<class IngredientsType>
-bool FeatureAdsorption<IngredientsType>::checkMove(const IngredientsType& ingredients,const MoveBase& move){
+bool FeatureAdsorption::checkMove(const IngredientsType& ingredients,const MoveBase& move) const {
     return true;
 }
 
@@ -205,7 +207,7 @@ bool FeatureAdsorption<IngredientsType>::checkMove(const IngredientsType& ingred
  **/
  
 template<class IngredientsType,class LocalMoveType> 
-bool FeatureAdsorption<IngredientsType>::checkMove(const IngredientsType& ingredients, const MoveLocalBase<LocalMoveType>& move) const{
+bool FeatureAdsorption::checkMove(const IngredientsType& ingredients, const MoveLocalBase<LocalMoveType>& move) const{
   VectorInt3 dir(move.getDir());
   
   // check adsorption on X-Walls 
@@ -268,7 +270,7 @@ bool FeatureAdsorption<IngredientsType>::checkMove(const IngredientsType& ingred
  **/
  
 template<class IngredientsType>
-void FeatureAdsorption<IngredientsType>::synchronize(IngredientsType& ingredients){
+void FeatureAdsorption::synchronize(IngredientsType& ingredients){
   if(adsorptionX){
     if(ingredients.isPeriodicX())
       throw std::runtime_error("FeatureAdsorption: adsorption on periodic X walls not allowed!");
@@ -300,9 +302,9 @@ void FeatureAdsorption<IngredientsType>::synchronize(IngredientsType& ingredient
  **/
  
 template<class IngredientsType>
-void FeatureAdsorption<IngredientsType>::exportRead(FileImport< IngredientsType >& fileReader)
+void FeatureAdsorption::exportRead(FileImport< IngredientsType >& fileReader)
 {
-  fileReader.registerRead("!adsorption",new ReadAdsorption< FeatureAdsorption<IngredientsType> >(*this));
+  fileReader.registerRead("!adsorption",new ReadAdsorption< FeatureAdsorption >(*this));
 }
 
 /**
@@ -317,9 +319,9 @@ void FeatureAdsorption<IngredientsType>::exportRead(FileImport< IngredientsType 
  */
  
 template<class IngredientsType>
-void FeatureAdsorption<IngredientsType>::exportWrite(AnalyzerWriteBfmFile< IngredientsType >& fileWriter) const
+void FeatureAdsorption::exportWrite(AnalyzerWriteBfmFile< IngredientsType >& fileWriter) const
 {
-  fileWriter.registerWrite("!adsorption",new WriteAdsorption< FeatureAdsorption<IngredientsType> >(*this));
+  fileWriter.registerWrite("!adsorption",new WriteAdsorption< FeatureAdsorption >(*this));
 }
 
 
