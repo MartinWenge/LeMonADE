@@ -103,11 +103,11 @@ public:
 
   //! check for all Monte Carlo moves without special check functions (always true)
   template<class IngredientsType>
-  bool checkMove(const IngredientsType& ingredients,const MoveBase& move) const;
+  bool checkMove(const IngredientsType& ingredients, const MoveBase& move) const;
 
   //! check for local moves
   template<class IngredientsType,class LocalMoveType> 
-  bool checkMove(const IngredientsType& ingredients, const MoveLocalBase<LocalMoveType>& move) const;
+  bool checkMove(const IngredientsType& ingredients, MoveLocalBase<LocalMoveType>& move);
   
   //! synchronize function to check if Box settings match the adsorption settings
   template < class IngredientsType > void synchronize(IngredientsType& ing);
@@ -165,6 +165,10 @@ public:
   //!export bfm-file write command !nn_interaction
   template <class IngredientsType>
   void exportWrite(AnalyzerWriteBfmFile <IngredientsType>& fileWriter) const;
+  
+  void printMetaData(std::ostream& streamOut) const{
+    streamOut << "\tAbdsorption in (x,y,z):("  << adsorptionX<<","<< adsorptionY<<"," << adsorptionZ<<")"<< std::endl;
+  }
 
 };
 
@@ -187,7 +191,7 @@ FeatureAdsorption::FeatureAdsorption():
  * @return true (always)
  **/
 template<class IngredientsType>
-bool FeatureAdsorption::checkMove(const IngredientsType& ingredients,const MoveBase& move) const {
+bool FeatureAdsorption::checkMove(const IngredientsType& ingredients, const MoveBase& move) const {
     return true;
 }
 
@@ -207,7 +211,7 @@ bool FeatureAdsorption::checkMove(const IngredientsType& ingredients,const MoveB
  **/
  
 template<class IngredientsType,class LocalMoveType> 
-bool FeatureAdsorption::checkMove(const IngredientsType& ingredients, const MoveLocalBase<LocalMoveType>& move) const{
+bool FeatureAdsorption::checkMove(const IngredientsType& ingredients, MoveLocalBase<LocalMoveType>& move) {
   VectorInt3 dir(move.getDir());
   
   // check adsorption on X-Walls 

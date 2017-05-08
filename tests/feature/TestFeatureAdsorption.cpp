@@ -32,10 +32,18 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <LeMonADE/core/Ingredients.h>
 #include <LeMonADE/feature/FeatureAdsorption.h>
+//#include <LeMonADE/feature/FeatureMoleculesIO.h>
+
+#include <LeMonADE/analyzer/AnalyzerWriteBfmFile.h>
+#include <LeMonADE/updater/UpdaterReadBfmFile.h>
+
+#include <LeMonADE/updater/moves/MoveBase.h>
+#include <LeMonADE/updater/moves/MoveLocalSc.h>
 
 
 class TestFeatureAdsorption: public ::testing::Test{
 public:
+  //typedef LOKI_TYPELIST_2(FeatureMoleculesIO, FeatureAdsorption) Features;
   typedef LOKI_TYPELIST_1(FeatureAdsorption) Features;
   typedef ConfigureSystem<VectorInt3,Features,3> Config;
   typedef Ingredients<Config> IngredientsType;
@@ -121,8 +129,79 @@ TEST_F(TestFeatureAdsorption,synchronize)
   
 }
 
+TEST_F(TestFeatureAdsorption,checkMove)
+{
+  IngredientsType ingredients;
+  
+  // set system parameters
+  ingredients.setBoxX(16);
+  ingredients.setBoxY(16);
+  ingredients.setBoxZ(16);
+  ingredients.setPeriodicX(true);
+  ingredients.setPeriodicY(true);
+  ingredients.setPeriodicZ(false);
+  ingredients.setAdsorptionEnergyZ(0.5);
+  ingredients.modifyMolecules().addMonomer(VectorInt3(0,0,1));
+  
+  MoveBase basemove;
+  basemove.init(ingredients);
+  EXPECT_TRUE(basemove.check(ingredients));
+  
+  MoveLocalSc move;
+  move.init(ingredients);
+  //check move towards adsorbing wall
+  while(move.getDir().getZ()>-1) move.init(ingredients);
+  move.check(ingredients);
+  EXPECT_DOUBLE_EQ(std::exp(0.5),move.getProbability());
+  
+  ingredients.modifyMolecules()[0].setAllCoordinates(0,0,0);
+  while(move.getDir().getZ()<1) move.init(ingredients);
+  move.check(ingredients);
+  EXPECT_DOUBLE_EQ(std::exp(-0.5),move.getProbability());
+  
+}
+
    
 TEST_F(TestFeatureAdsorption,ReadWriteRoutine)
 {
   IngredientsType ingredients;
+  
+  // set system parameters
+  ingredients.setBoxX(16);
+  ingredients.setBoxY(16);
+  ingredients.setBoxZ(16);
+  ingredients.setPeriodicX(true);
+  ingredients.setPeriodicY(true);
+  ingredients.setPeriodicZ(false);
+  ingredients.setAdsorptionEnergyZ(0.5);
+  
+  // write out information
+  std::string filename("tmpadsorption.bfm");
+  
+  AnalyzerWriteBfmFile<IngredientsType> testWriter(filename,ingredients,AnalyzerWriteBfmFile<IngredientsType>::NEWFILE);
+  testWriter.initialize();
+  testWriter.execute();
+  testWriter.cleanup();
+
+  
+  IngredientsType checkIngredients;
+  UpdaterReadBfmFile<IngredientsType> testReader(filename,checkIngredients,UpdaterReadBfmFile<IngredientsType>::READ_LAST_CONFIG_SAVE);
+  testReader.initialize();
+  testReader.execute();
+  testReader.cleanup();
+  
+  //check read in information
+  EXPECT_TRUE(checkIngredients.isPeriodicX());
+  EXPECT_TRUE(checkIngredients.isPeriodicY());
+  EXPECT_FALSE(checkIngredients.isPeriodicZ());
+  EXPECT_FALSE(checkIngredients.getAdsorptionX());
+  EXPECT_FALSE(checkIngredients.getAdsorptionY());
+  EXPECT_TRUE(checkIngredients.getAdsorptionZ());
+  EXPECT_DOUBLE_EQ(0.0,checkIngredients.getAdsorptionEnergyX());
+  EXPECT_DOUBLE_EQ(0.0,checkIngredients.getAdsorptionEnergyY());
+  EXPECT_DOUBLE_EQ(0.5,checkIngredients.getAdsorptionEnergyZ());
+  
+  //remove tmp file
+  remove(filename.c_str());
+  
 }

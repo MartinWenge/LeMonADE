@@ -84,6 +84,7 @@ public:
 template<class IngredientsType>
 void ReadAdsorption<IngredientsType>::execute()
 {
+  
     IngredientsType& ingredients=this->getDestination();
     std::istream& file=this->getInputStream();
 
@@ -109,13 +110,10 @@ void ReadAdsorption<IngredientsType>::execute()
     
     //now save the interaction tuple just read from the file
     if( direction.compare("x")==0 ){
-      ingredients.setAdsorptionX(true);
       ingredients.setAdsorptionEnergyX(adsorpEnergy);
     }else if( direction.compare("y")==0 ){
-      ingredients.setAdsorptionY(true);
       ingredients.setAdsorptionEnergyY(adsorpEnergy);
     }else if( direction.compare("z")==0 ){
-      ingredients.setAdsorptionZ(true);
       ingredients.setAdsorptionEnergyZ(adsorpEnergy);
     }else{
       throw std::runtime_error("ReadAdsorption::execute(): unknown read in key\n");
@@ -135,13 +133,13 @@ void WriteAdsorption<IngredientsType>::writeStream(std::ostream& stream)
 {
   stream<<"## adsorbing walls with respective adsorption energy\n";
   if(this->getSource().getAdsorptionX()){
-    stream<<"!adsorption "<<this->getSource().setAdsorptionEnergyX()<<" x"<<"\n";
+    stream<<"!adsorption "<<this->getSource().getAdsorptionEnergyX()<<" x\n";
   }
   if(this->getSource().getAdsorptionY()){
-    stream<<"!adsorption "<<this->getSource().setAdsorptionEnergyY()<<" x"<<"\n";
+    stream<<"!adsorption "<<this->getSource().getAdsorptionEnergyY()<<" y\n";
   }
   if(this->getSource().getAdsorptionZ()){
-    stream<<"!adsorption "<<this->getSource().setAdsorptionEnergyZ()<<" x"<<"\n";
+    stream<<"!adsorption "<<this->getSource().getAdsorptionEnergyZ()<<" z\n";
   }
   
   stream<<"\n\n";
