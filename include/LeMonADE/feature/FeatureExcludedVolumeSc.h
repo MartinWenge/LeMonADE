@@ -37,6 +37,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/updater/moves/MoveAddMonomerSc.h>
 #include <LeMonADE/updater/moves/MoveLocalBcc.h>
 #include <LeMonADE/updater/moves/MoveAddMonomerBcc.h>
+#include <LeMonADE/updater/moves/MoveActiveParticle.h>
 
 /*****************************************************************************/
 /**
@@ -121,6 +122,10 @@ public:
 	template<class IngredientsType>
 	bool checkMove(const IngredientsType& ingredients, const MoveLocalBcc& move) const;
 
+	//! check active move: wrapper for local sc move
+	template<class IngredientsType>
+	bool checkMove(const IngredientsType& ingredients, const MoveActiveParticle& move) const;
+
 	//! check move for adding an sc monomer
 	template<class IngredientsType>
 	bool checkMove(const IngredientsType& ingredients, const MoveAddMonomerSc& move) const;
@@ -132,6 +137,10 @@ public:
 	//! apply move for basic moves - does nothing
 	template<class IngredientsType>
 	void applyMove(IngredientsType& ing, const MoveBase& move);
+
+	//! apply move MoveActiveParticle: wrapper using local sc move
+	template<class IngredientsType>
+	void applyMove(IngredientsType& ing, const MoveActiveParticle& move);
 
 	//! apply move for local sc moves
 	template<class IngredientsType>
@@ -334,6 +343,46 @@ void FeatureExcludedVolumeSc< LatticeClassType<LatticeValueType> >::applyMove(In
 
 }
 
+/******************************************************************************/
+/**
+ * @fn bool FeatureExcludedVolumeSc< LatticeClassType<LatticeValueType> >::checkMove( const IngredientsType& ingredients, const MoveLocalSc& move )const
+ * @brief checks excluded volume for moves of type MoveLocalSc
+ *
+ * @param [in] ingredients A reference to the IngredientsType - mainly the system.
+ * @param [in] move A reference to MoveLocalSc.
+ * @return if move is allowed (\a true) or rejected (\a false).
+ * */
+/******************************************************************************/
+template<template<typename> class LatticeClassType, typename LatticeValueType>
+template < class IngredientsType>
+bool FeatureExcludedVolumeSc< LatticeClassType<LatticeValueType> >::checkMove( const IngredientsType& ingredients, const MoveActiveParticle& move ) const
+{
+	MoveLocalSc handOverMove;
+	handOverMove.init(ingredients, move.getIndex(), move.getDir());
+
+	this->checkMove(ingredients,handOverMove);
+
+}
+
+/******************************************************************************/
+/**
+ * @fn void FeatureExcludedVolumeSc< LatticeClassType<LatticeValueType> >::applyMove(IngredientsType& ing, const MoveLocalSc<LocalMoveType>& move)
+ * @brief Updates the lattice occupation according to the move for moves of type MoveLocalSc.
+ *
+ * @param [in] ingredients A reference to the IngredientsType - mainly the system.
+ * @param [in] move A reference to MoveLocalSc.
+ * */
+/******************************************************************************/
+template<template<typename> class LatticeClassType, typename LatticeValueType>
+template<class IngredientsType>
+void FeatureExcludedVolumeSc< LatticeClassType<LatticeValueType> >::applyMove(IngredientsType& ing, const MoveActiveParticle& move)
+{
+	MoveLocalSc handOverMove;
+	handOverMove.init(ing, move.getIndex(), move.getDir());
+
+	this->applyMove(ing,handOverMove);
+
+}
 
 /******************************************************************************/
 /**
