@@ -32,7 +32,7 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <LeMonADE/core/Ingredients.h>
 #include <LeMonADE/feature/FeatureAdsorption.h>
-//#include <LeMonADE/feature/FeatureMoleculesIO.h>
+#include <LeMonADE/feature/FeatureMoleculesIO.h>
 
 #include <LeMonADE/analyzer/AnalyzerWriteBfmFile.h>
 #include <LeMonADE/updater/UpdaterReadBfmFile.h>
@@ -43,10 +43,27 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 class TestFeatureAdsorption: public ::testing::Test{
 public:
-  //typedef LOKI_TYPELIST_2(FeatureMoleculesIO, FeatureAdsorption) Features;
-  typedef LOKI_TYPELIST_1(FeatureAdsorption) Features;
+  typedef LOKI_TYPELIST_2(FeatureMoleculesIO, FeatureAdsorption) Features;
+  //typedef LOKI_TYPELIST_1(FeatureAdsorption) Features;
   typedef ConfigureSystem<VectorInt3,Features,3> Config;
   typedef Ingredients<Config> IngredientsType;
+
+   //dummy move class used to check response to unknown move type
+  class UnknownMove:public MoveBase
+  {
+	  public:
+		template<class IngredientsType> bool check(IngredientsType& ingredients) const
+		{
+		return ingredients.checkMove(ingredients,*this);
+		}
+
+		template<class IngredientsType> void apply(IngredientsType& ingredients)
+		{
+		ingredients.applyMove(ingredients,*this);
+		}
+
+		template <class IngredientsType> void init(const IngredientsType& ingredients){};
+  };
   
   /*
   //redirect cout output
@@ -143,7 +160,7 @@ TEST_F(TestFeatureAdsorption,checkMove)
   ingredients.setAdsorptionEnergyZ(0.5);
   ingredients.modifyMolecules().addMonomer(VectorInt3(0,0,1));
   
-  MoveBase basemove;
+  UnknownMove basemove;
   basemove.init(ingredients);
   EXPECT_TRUE(basemove.check(ingredients));
   
