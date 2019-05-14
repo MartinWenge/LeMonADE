@@ -493,7 +493,7 @@ public:
 	{
 	  T prod = (*this)*(*this); 
 	  *this /= sqrt(prod);
-	  if ( isnan((*this).getX()) || isnan((*this).getY()) ||isnan((*this).getZ()) )
+	  if ( this->getX() != this->getX() || this->getY() != this->getY() || this->getZ() != this->getZ() )
 	  {
 		  std::ostringstream strm;
 		  strm << "Vector3D::normalize() leading to nan " << std::endl;
@@ -502,11 +502,18 @@ public:
 	  return *this;
 	}
 
-	//! Returns the Vector3D itself
-	Vector3D& getVector3D()
+	//! Returns the const Vector3D itself
+	const Vector3D& getVector3D() const 
 	{
 		  return *this;
 	}
+	
+	//! Returns the modifiable Vector3D itself
+	Vector3D& modifyVector3D() 
+	{
+		  return *this;
+	}
+
 };
 
 /**

@@ -3,9 +3,9 @@
   o\.|./o    e   xtensible     | LeMonADE: An Open Source Implementation of the
  o\.\|/./o   Mon te-Carlo      |           Bond-Fluctuation-Model for Polymers
 oo---0---oo  A   lgorithm and  |
- o/./|\.\o   D   evelopment    | Copyright (C) 2013-2015 by 
+ o/./|\.\o   D   evelopment    | Copyright (C) 2013-2015 by
   o/.|.\o    E   nvironment    | LeMonADE Principal Developers (see AUTHORS)
-    ooo                        | 
+    ooo                        |
 ----------------------------------------------------------------------------------
 
 This file is part of LeMonADE.
@@ -58,7 +58,7 @@ public:
   UpdaterSimpleSimulator(IngredientsType& ing,uint32_t steps)
   :ingredients(ing),nsteps(steps)
   {}
-  
+
   /**
    * @brief This checks all used Feature and applies all Feature if all conditions are met.
    *
@@ -73,28 +73,29 @@ public:
 	time_t startTimer = time(NULL); //in seconds
 	std::cout<<"mcs "<<ingredients.getMolecules().getAge() << " passed time " << ((difftime(time(NULL), startTimer)) ) <<std::endl;
 
-    for(int n=0;n<nsteps;n++){
-      
-	for(int m=0;m<ingredients.getMolecules().size();m++)
+
+    for(uint32_t n=0;n<nsteps;n++){
+
+	for(size_t m=0;m<ingredients.getMolecules().size();m++)
 	{
 		move.init(ingredients);
-		
+
 		if(move.check(ingredients)==true)
 		{
 			move.apply(ingredients);
 		}
 	}
-      
+
     }
-    
+
     ingredients.modifyMolecules().setAge(ingredients.modifyMolecules().getAge()+nsteps);
-    
+
     std::cout<<"mcs "<<ingredients.getMolecules().getAge() << " with " << (((1.0*nsteps)*ingredients.getMolecules().size())/(difftime(time(NULL), startTimer)) ) << " [attempted moves/s]" <<std::endl;
     std::cout<<"mcs "<<ingredients.getMolecules().getAge() << " passed time " << ((difftime(time(NULL), startTimer)) ) << " with " << nsteps << " MCS "<<std::endl;
 
     return true;
   }
-  
+
   /**
    * @brief This function is called \a once in the beginning of the TaskManager.
    *
@@ -116,7 +117,7 @@ public:
 private:
   //! A reference to the IngredientsType - mainly the system
   IngredientsType& ingredients;
-  
+
   //! Specialized move to be used
   MoveType move;
 
