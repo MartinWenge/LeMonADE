@@ -25,22 +25,15 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------*/
 
-#ifndef LEMONADE_FEATURE_TANGLOTRON_SR_H
-#define LEMONADE_FEATURE_TANGLOTRON_SR_H
-/**
-* @file
-*
-* @class FeatureTanglotronSR
-*
-* @brief apply potential for one directional rotation of tanglotron motor
-* 
-* @details If one of four rotor monomers of the tanglotron is moved by simulation
-* Metropolis-criterion is calculated by torque and angle of the move.
-*
-* @tparam IngredientsType
-*
-**/
+#ifndef LEMONADE_FEATURE_TANGLOTRON_H
+#define LEMONADE_FEATURE_TANGLOTRON_H
 
+/**
+ * @file
+ * @date 2021/02/03
+ * @author Martin Wengenmayr/Cornelia Struebig
+ * @brief Definition and Implementation of FeatureTanglotron
+**/
 #include <iostream>
 #include <cmath>
 
@@ -48,20 +41,205 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/updater/moves/MoveLocalSc.h>
 #include <LeMonADE/updater/moves/MoveBase.h>
 #include <LeMonADE/feature/FeatureBoltzmann.h>
-#include <LeMonADE/feature/FeatureAttributes.h>
+#include <LeMonADE/feature/FeatureTanglotronReadWrite.h>
 
-#include "TanglotronMotor.h"
-#include "WriteTorque.h"
-#include "WriteTanglotron.h"
-#include "ReadTorque.h"
-#include "ReadTanglotron.h"
+/**
+* @class TanglotronAttributeTag
+* 
+* @brief Extension for tanglotrons - isTanglotron and tanglotronType
+* 
+* @details Extends tanglotrons by a bool as tag isTanglotron along with getter and
+* setter. Initially this tag is set to false.
+* Besides another enum tag tanglotronType is set, which holds information about
+* stator (int 0) or rotorA,B,C,D (int 1-4). Also this goes along with getter and setter
+* functions. This tag is initially set to 5.
+**/
+class TanglotronAttributeTag
+{
+public:
+    //! enum variable holding the tanglotronType
+    enum tanglotronType{
+        stator=0, 
+        rotorA=1, 
+        rotorB=2,
+        rotorC=3,
+        rotorD=4
+    };
+   
+	//! Standard constructor- initially the tag is set to 5 and isTanglotron is set to false
+	TanglotronAttributeTag():isTanglotron(false),tag(5),tanglotronID(){}
 
+	/**
+	* @brief setting boolean tag isTanglotron
+	*
+	* @param isTanglotron_ bool which tells if monomer is part of a tanglotron
+    * motor or not
+	**/
+	void setIsTanglotron(bool isTanglotron_){ isTanglotron=isTanglotron_; }
+	
+    //! getting boolean tag isTanglotron
+    bool getIsTanglotron() const {return isTanglotron;}
+    
+    /**
+	* @brief setting enum tag tanglotronType
+	*
+	* @param attribute role of tanglotron part as string (stator, rotorA,B,C,D) or
+    * integer (0,1,2,3,4)
+	**/
+    void setTanglotronType(int attribute){ tag=attribute; }
+    
+	//! getting enum tag tanglotronType
+	int32_t getTanglotronType() const {if(isTanglotron) return tag;}
+	
+	/**
+	* @brief setting size_t tag tanglotronID
+	*
+	* @param id number of motor in vector TanglotronMotorUnits
+	**/
+    void setTanglotronID(size_t id){ tanglotronID=id; }
+    
+    //! getting size_t tag tanglotronID
+	size_t getTanglotronID() const {if(isTanglotron) return tanglotronID;}
+	
+private:
+    //! Private Variable holding the bool if monomer is part of tanglotron
+    bool isTanglotron;
+	//! Private variable holding the tanglotronType. Default is 5.
+    int32_t tag;
+    //! private variable holding the number of one tanglotron motor in the vector holding all motors
+    size_t tanglotronID;
+};
 
-class FeatureTanglotronSR: public Feature
+/**
+* @class TanglotronMotor
+*
+* @brief set and get indices of stator and rotors of a tanglotron motor
+* 
+* @details One tanglotron motor is built out of one central stator monomer and
+* four surrounding rotor monomers which are connected each with the stator
+* and in pairs with each other (A and B as well as C and D).
+*
+**/
+class TanglotronMotor: public Feature
 {
 public:
     
-    typedef LOKI_TYPELIST_1(FeatureAttributes) required_features_front;
+    //! Standard constructor- initially all entries are set to NULL
+	TanglotronMotor():StatorIndex(0), RotorAIndex(0), RotorBIndex(0), RotorCIndex(0), RotorDIndex(0), LK(0), LK_progress(), angleSum(0.0), angle_progress(), angleSumAB(0.0), angleSumCD(0.0) {}
+
+    //! setter for tanglotron stator/rotors
+	void setTanglotronMotor(uint32_t idxStator, uint32_t idxA, uint32_t idxB, uint32_t idxC, uint32_t idxD);
+
+    //! getter for StatorIndex
+    uint32_t getIndexStator() const{return StatorIndex;}
+    //! getter for RotorAIndex
+    uint32_t getIndexRotorA() const{return RotorAIndex;}
+    //! getter for RotorBIndex
+    uint32_t getIndexRotorB() const{return RotorBIndex;}
+    //! getter for RotorCIndex
+	uint32_t getIndexRotorC() const{return RotorCIndex;}
+    //! getter for RotorDIndex
+    uint32_t getIndexRotorD() const{return RotorDIndex;}
+
+    //! getter for LK
+    int64_t getLK() const{return LK;}
+    //! getter for LK_progress
+    std::vector<int8_t> getLKprogress() const{return LK_progress;}
+
+    //! getter for angleSum
+    double getAngleSum() const{return angleSum;}
+    //! getter for angle_progress
+    std::vector<double> getAngleSumProgress() const{return angle_progress;}
+    //! getter for angleSumAB
+    double getAngleSumAB() const{return angleSumAB;}
+    //! getter for angleSumCD
+    double getAngleSumCD() const{return angleSumCD;}
+    
+    //! update counter of linking number
+    void addLK(int8_t halfLKtoAddOrSubstract);
+    //! update full tanglotron angle
+    void addAngle(double angle);
+    //! update angle stator/AB rotor unit
+    void addAngleAB(double angle){angleSumAB += angle;}
+    //! update angle stator/CD rotor unit
+    void addAngleCD(double angle){angleSumCD += angle;}
+    
+private:
+    
+    //! Index of the stator monomer of the tanglotron motor
+    uint32_t StatorIndex;
+    //! Index of the first (A) rotor monomer of the tanglotron motor
+    uint32_t RotorAIndex;
+    //! Index of the second (B) rotor monomer of the tanglotron motor
+    uint32_t RotorBIndex;
+    //! Index of the third (C) rotor monomer of the tanglotron motor
+    uint32_t RotorCIndex;
+    //! Index of the fourth (D) rotor monomer of the tanglotron motor
+    uint32_t RotorDIndex;
+    
+    //! Linking Number, which will be counted on the run
+    int64_t LK;
+    //! Vector, which holds all added or substracted half Linking Numbers stepwise
+    std::vector<int8_t> LK_progress;
+    
+    //! Linking Number, which will be counted on the run
+    double angleSum;
+    //! Vector, which holds current angleSum stepwise
+    std::vector<double> angle_progress;
+    //! motor angle, which will be counted on the run
+    double angleSumAB;
+    //! motor angle, which will be counted on the run
+    double angleSumCD;
+};
+
+/**
+* @details function to set the indices of the tanglotron motor unit
+*/
+void TanglotronMotor::setTanglotronMotor(uint32_t idxStator, uint32_t idxA, uint32_t idxB, uint32_t idxC, uint32_t idxD)
+{
+	StatorIndex = idxStator;
+	RotorAIndex = idxA;
+	RotorBIndex = idxB;
+    RotorCIndex = idxC;
+    RotorDIndex = idxD;
+}
+
+/**
+* @details function to add or substract half Linking Numbers
+*/
+void TanglotronMotor::addLK(int8_t halfLKtoAddOrSubstract)
+{
+    #ifdef DEBUG
+        std::cout << "in addLK with " << halfLKtoAddOrSubstract << std::endl;
+    #endif /*DEBUG*/
+	LK += halfLKtoAddOrSubstract;
+    LK_progress.push_back(halfLKtoAddOrSubstract);
+}
+
+/**
+* @details function to add or substract angle from angleSum
+*/
+void TanglotronMotor::addAngle(double angle)
+{
+	angleSum += angle;
+    angle_progress.push_back(angle);
+}
+
+
+/**
+* @class FeatureTanglotron
+*
+* @brief apply potential for one directional rotation of tanglotron motor
+* 
+* @details If one of four rotor monomers of the tanglotron is moved by simulation
+* Metropolis-criterion is calculated by torque and angle of the move.
+*
+* @tparam IngredientsType
+**/
+class FeatureTanglotron: public Feature
+{
+public:
+    //! requested feature: FeatureBoltzmann to calculate move probability from calculated potential energy
     typedef LOKI_TYPELIST_1(FeatureBoltzmann) required_features_back;
     
     //! monomer_extensions, gives information if monomer is part of tanglotron motors and special which part
@@ -73,71 +251,45 @@ public:
     * @param variableCalculatePotential to decide if tanglotron potential should
     * be calculated or not (default true)
     */
-    FeatureTanglotronSR():variableCalculatePotential(true) {}
+    FeatureTanglotron():variableCalculatePotential(true) {}
     
-    virtual ~FeatureTanglotronSR(){}
+    //! default empty destructor
+    virtual ~FeatureTanglotron(){}
     
     /**
     * synchronize
-    *
-    * @details no duty yet
     *
     * @param ingredients A reference to the IngredientsType - mainly the system.
     */
     template<class IngredientsType> void synchronize(IngredientsType& ingredients)
     {
-        //std::cout << "Number of Tanglotrons in Vector: " << getTanglotronMotors().size() << std::endl;
+        #ifdef DEBUG
+            std::cout << "Number of Tanglotrons in Vector: " << getTanglotronMotors().size() << std::endl;
+        #endif /*DEBUG*/
     }
     
+    //! check move with calculation of tanglotron potential energy
 	template<class IngredientsType> 
 	bool checkMove(const IngredientsType& ingredients,MoveLocalSc& move);
     
+    //! default behavior for unknown moves: return true
     template<class IngredientsType> 
 	bool checkMove(const IngredientsType& ingredients,MoveBase& move){ return true; }
 	
-	/**
-    * uses the private variable variableCalculatePotential
-    */
+	//! getter for variableCalculatePotential
 	bool getCalculatePotential() const {return variableCalculatePotential;}
 	
-	/**
-    * @brief set bool which decides if tanglotron potential is calculated or not
-    *
-    * use it in updatern to build ingredients without additional potential
-    * 
-    * @param yesorno bool
-    */
-    void setCalculatePotential(bool yesorno)
-    {
-        variableCalculatePotential=yesorno;
-    }
+	//! setter for variableCalculatePotential
+    void setCalculatePotential(bool yesorno){variableCalculatePotential=yesorno;}
     
-    /**
-    * uses the private variable Torque
-    */
-    double getTorque() const
-    {
-        return Torque;
-    }
+    //! getter for Torque
+    double getTorque() const{return Torque;}
     
-    /**
-    * sets the private variable Torque
-    * 
-    * @param torque_ value of torque
-    */
-    void setTorque(double torque_)
-    {
-        Torque = torque_;
-    }
+    //! setter for Torque
+    void setTorque(double torque_){Torque = torque_;}
     
-    /**
-    * gets indices of all tanglotron motors
-    * uses private vector TanglotronMotorUnits
-    */
-    const std::vector<TanglotronMotor>& getTanglotronMotors() const
-    {
-        return TanglotronMotorUnits;
-    }
+    //! getter for TanglotronMotorUnits
+    const std::vector<TanglotronMotor>& getTanglotronMotors() const{return TanglotronMotorUnits;}
     
     /**
     * add one tanglotron motor to TanglotronMotorUnits
@@ -150,13 +302,8 @@ public:
         TanglotronMotorUnits.push_back(oneTanglotronMotor_);
     }
     
-    /**
-    * like getTanglotronMotors() but without const
-    */
-    std::vector<TanglotronMotor>& modifyTanglotronMotors()
-    {
-        return TanglotronMotorUnits;
-    }
+    //! setter reference for TanglotronMotorUnits
+    std::vector<TanglotronMotor>& modifyTanglotronMotors(){return TanglotronMotorUnits;}
     
     /**
     * returns size() of TanglotronMotorUnits
@@ -172,9 +319,7 @@ public:
     template<class IngredientsType> 
     void exportWrite(AnalyzerWriteBfmFile<IngredientsType>& fileWriter) const;
     
-    
 private:
-    
     //! to decide if potential should be calculated or not
     bool variableCalculatePotential;
     
@@ -183,14 +328,11 @@ private:
     //! indices of stators and rotors of all tanglotron motors in ingredients
     std::vector<TanglotronMotor> TanglotronMotorUnits;
     
-    
     template<class IngredientsType> 
     double calculatePotential(const IngredientsType& ingredients, MoveLocalSc& move);
     
     int sgn(double value);
-        
 };
-
 
 /**
 * @brief checkMove by probability from calculatePotential
@@ -202,7 +344,7 @@ private:
 * @tparam IngredientsType Features used in the system. See Ingredients
 */
 template<class IngredientsType>
-bool FeatureTanglotronSR::checkMove(const IngredientsType& ingredients, MoveLocalSc& move) 
+bool FeatureTanglotron::checkMove(const IngredientsType& ingredients, MoveLocalSc& move) 
 {	
     if((ingredients.getMolecules()[move.getIndex()].getIsTanglotron()) && (ingredients.getMolecules()[move.getIndex()].getTanglotronType()!=TanglotronAttributeTag::stator)){
         if(ingredients.getCalculatePotential())
@@ -211,7 +353,6 @@ bool FeatureTanglotronSR::checkMove(const IngredientsType& ingredients, MoveLoca
     
 	return true;
 }
-
 
 /**
 * @brief calculate potential for Metropolis-criterion
@@ -227,9 +368,11 @@ bool FeatureTanglotronSR::checkMove(const IngredientsType& ingredients, MoveLoca
 * @tparam IngredientsType Features used in the system. See Ingredients
 */
 template<class IngredientsType> 
-double FeatureTanglotronSR::calculatePotential(const IngredientsType& ingredients, MoveLocalSc& move)
+double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients, MoveLocalSc& move)
 {
-    //std::cout << "begin to calcuate potential" << std::endl;
+    #ifdef DEBUG
+        std::cout << "begin to calculate potential" << std::endl;
+    #endif /*DEBUG*/
     
     //index of moved monomer
     uint32_t movedMonomerIndex(move.getIndex());
@@ -264,10 +407,8 @@ double FeatureTanglotronSR::calculatePotential(const IngredientsType& ingredient
             break;
         
         default:
-            throw std::runtime_error("FeatureTanglotronSR: moved monomer is no rotor monomer!");
+            throw std::runtime_error("FeatureTanglotron: moved monomer is no rotor monomer!");
     }
-    
-
     //if still here we have two rotor positions in rotorsPosition and one statorPosition and can calculate the potential
     
     //vectors stator->rotor
@@ -301,16 +442,14 @@ double FeatureTanglotronSR::calculatePotential(const IngredientsType& ingredient
     
     //calculate potential according e^-Delta U
     return (exp(-(sgn(move.getDir()*normal) * Torque * angle)));
-    
 }
-
 
 /**
 * calculate signum function
 * 
 * @param value value to decide if it is above or below 0
 */
-int FeatureTanglotronSR::sgn(double value)
+int FeatureTanglotron::sgn(double value)
 {
     if(value>0)
         return 1;
@@ -320,7 +459,6 @@ int FeatureTanglotronSR::sgn(double value)
         return -1;
 }
 
-
 /**
 * read value of torque and indices of tanglotron motors from bfm file
 * by function ReadTorque and ReadTanglotron
@@ -328,14 +466,12 @@ int FeatureTanglotronSR::sgn(double value)
 * @tparam IngredientsType Features used in the system. See Ingredients
 */
 template < class IngredientsType >
-void FeatureTanglotronSR::exportRead(FileImport<IngredientsType>& fileReader)
+void FeatureTanglotron::exportRead(FileImport<IngredientsType>& fileReader)
 {
     IngredientsType& destination=fileReader.getDestination();
     fileReader.registerRead("#!torque", new  ReadTorque< IngredientsType > (destination));
     fileReader.registerRead("#!tanglotrons", new  ReadTanglotron< IngredientsType > (destination));
-
 }
-
 
 /**
 * write value of torque and indices of tanglotron motors in bfm file
@@ -344,13 +480,11 @@ void FeatureTanglotronSR::exportRead(FileImport<IngredientsType>& fileReader)
 * @tparam IngredientsType Features used in the system. See Ingredients
 */
 template < class IngredientsType >
-void FeatureTanglotronSR::exportWrite(AnalyzerWriteBfmFile<IngredientsType>& fileWriter) const
+void FeatureTanglotron::exportWrite(AnalyzerWriteBfmFile<IngredientsType>& fileWriter) const
 {
     const IngredientsType& source=fileWriter.getIngredients_();
     fileWriter.registerWrite("#!torque", new WriteTorque <IngredientsType> (source));
     fileWriter.registerWrite("#!tanglotrons", new WriteTanglotron <IngredientsType> (source));
 }
 
-
-
-#endif //LEMONADE_FEATURE_TANGLOTRON_SR_H
+#endif //LEMONADE_FEATURE_TANGLOTRON_H
