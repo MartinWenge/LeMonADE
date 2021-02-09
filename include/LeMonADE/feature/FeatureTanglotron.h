@@ -387,7 +387,7 @@ double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients,
     //add first moved rotor monomer to rotorsPosition
     rotorsPosition.push_back(ingredients.getMolecules()[movedMonomerIndex]);
     
-    //add the second rotor monomer belongig to the moved rotor monomer
+    //add the second rotor monomer belonging to the moved rotor monomer
     switch(ingredients.getMolecules()[movedMonomerIndex].getTanglotronType()) // either 1=rotorA, 2=rotorB, 3=rotorC, 4=rotorD
     {
         case TanglotronAttributeTag::rotorA:
@@ -428,7 +428,7 @@ double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients,
     //angle between old and new radius
     double angleCos((radius*radiusNew)/(radius.getLength()*radiusNew.getLength()));
     double angle;
-    if(radiusNew.getLength()==0) //case for b'||omega => b' comes up to the constant rotationaly axis, but didn't circle in the plane perpendicular to the axis
+    if(radiusNew.getLength()==0) //case for b'||omega => b' comes up to the constant rotationally axis, but didn't circle in the plane perpendicular to the axis
         return 1.0; //angle = 0;
     else if(angleCos>1.0) //makes sure, that arccos isn't higher than 1 for rounding errors in case of r=r'
             return 1.0; //angle = 0; //acos(1.0);
