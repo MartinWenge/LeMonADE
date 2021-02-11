@@ -199,19 +199,19 @@ void ReadTanglotron<IngredientsType>::execute()
             this->getDestination().addTanglotronMotor(newTanglotron);
             
             this->getDestination().modifyMolecules()[idxStat-1].setIsTanglotron(true);
-            this->getDestination().modifyMolecules()[idxStat-1].setTanglotronType(TanglotronAttributeTag::stator);
+            this->getDestination().modifyMolecules()[idxStat-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::stator);
             this->getDestination().modifyMolecules()[idxStat-1].setTanglotronID(this->getDestination().getTanglotronMotorsSize()-1);
             this->getDestination().modifyMolecules()[idxA-1].setIsTanglotron(true);
-            this->getDestination().modifyMolecules()[idxA-1].setTanglotronType(TanglotronAttributeTag::rotorA);
+            this->getDestination().modifyMolecules()[idxA-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorA);
             this->getDestination().modifyMolecules()[idxA-1].setTanglotronID(this->getDestination().getTanglotronMotorsSize()-1);
             this->getDestination().modifyMolecules()[idxB-1].setIsTanglotron(true);
-            this->getDestination().modifyMolecules()[idxB-1].setTanglotronType(TanglotronAttributeTag::rotorB);
+            this->getDestination().modifyMolecules()[idxB-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorB);
             this->getDestination().modifyMolecules()[idxB-1].setTanglotronID(this->getDestination().getTanglotronMotorsSize()-1);
             this->getDestination().modifyMolecules()[idxC-1].setIsTanglotron(true);
-            this->getDestination().modifyMolecules()[idxC-1].setTanglotronType(TanglotronAttributeTag::rotorC);
+            this->getDestination().modifyMolecules()[idxC-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorC);
             this->getDestination().modifyMolecules()[idxC-1].setTanglotronID(this->getDestination().getTanglotronMotorsSize()-1);
             this->getDestination().modifyMolecules()[idxD-1].setIsTanglotron(true);
-            this->getDestination().modifyMolecules()[idxD-1].setTanglotronType(TanglotronAttributeTag::rotorD);
+            this->getDestination().modifyMolecules()[idxD-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorD);
             this->getDestination().modifyMolecules()[idxD-1].setTanglotronID(this->getDestination().getTanglotronMotorsSize()-1);
             
             std::getline(this->getInputStream(),line);

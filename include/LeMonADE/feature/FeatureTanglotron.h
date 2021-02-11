@@ -41,7 +41,6 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 #include <LeMonADE/updater/moves/MoveLocalSc.h>
 #include <LeMonADE/updater/moves/MoveBase.h>
 #include <LeMonADE/feature/FeatureBoltzmann.h>
-#include <LeMonADE/feature/FeatureTanglotronReadWrite.h>
 
 /**
 * @class TanglotronAttributeTag
@@ -89,7 +88,7 @@ public:
     void setTanglotronType(int attribute){ tag=attribute; }
     
 	//! getting enum tag tanglotronType
-	int32_t getTanglotronType() const {if(isTanglotron) return tag;}
+	int32_t getTanglotronType() const {if(isTanglotron) return tag; else return -1;}
 	
 	/**
 	* @brief setting size_t tag tanglotronID
@@ -99,7 +98,7 @@ public:
     void setTanglotronID(size_t id){ tanglotronID=id; }
     
     //! getting size_t tag tanglotronID
-	size_t getTanglotronID() const {if(isTanglotron) return tanglotronID;}
+	size_t getTanglotronID() const {if(isTanglotron) return tanglotronID; else return -1;}
 	
 private:
     //! Private Variable holding the bool if monomer is part of tanglotron
@@ -226,6 +225,8 @@ void TanglotronMotor::addAngle(double angle)
 }
 
 
+// include readwrtie here, which uses the Tanglotron motor
+#include <LeMonADE/feature/FeatureTanglotronReadWrite.h>
 /**
 * @class FeatureTanglotron
 *

@@ -111,7 +111,7 @@ void UpdaterAbstractCreate<IngredientsType>::initialize(){
 */
 template < class IngredientsType >
 bool UpdaterAbstractCreate<IngredientsType>::execute(){
-
+  return true;
 }
 
 /**
