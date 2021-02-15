@@ -356,18 +356,27 @@ void WriteBonds<IngredientsType>::writeStream(std::ostream& strm){
      size_t nLinks=molecules.getNumLinks(a);
      //loop over bond partners
      for(size_t b=0;b<nLinks;b++){
-       //look only backwards
-       if(molecules.getNeighborIdx(a,b)<a){
-
-	 //write bond if indices are more than one apart
-	 if(a-molecules.getNeighborIdx(a,b) > 1){
-	  strm<<molecules.getNeighborIdx(a,b)+1<<" "<<a+1<<"\n";
-#ifdef DEBUG
-	  std::cout<<"found additional bond: "<<a<<" "<<molecules.getNeighborIdx(a,b)<<std::endl;
-#endif //DEBUG
-	 }
-
-       }
+		//look only backwards
+		if(molecules.getNeighborIdx(a,b)<a){
+			//write bond if indices are more than one apart
+			if(a-molecules.getNeighborIdx(a,b) > 1){
+			strm<<molecules.getNeighborIdx(a,b)+1<<" "<<a+1<<"\n";
+			#ifdef DEBUG
+				std::cout<<"found additional bond: "<<a<<" "<<molecules.getNeighborIdx(a,b)<<std::endl;
+			#endif //DEBUG
+			}
+       }else if( (molecules.getNeighborIdx(a,b)-a) == 1){ // neighboring monomers with bonds over periodic boundaries
+	   		// *** this is an expensive check!!! *** //
+			// this is only needed for systems with FeatureMoleculesIOUnsaveCheck
+		   //calculate bond length
+		   double diff((molecules[a].getVector3D()-molecules[molecules.getNeighborIdx(a,b)].getVector3D()).getLength());
+		   if(diff > 10){
+			   	strm<<a+1<<" "<<molecules.getNeighborIdx(a,b)+1<<"\n";
+				#ifdef DEBUG
+					std::cout<<"found additional bond: "<<a<<" "<<molecules.getNeighborIdx(a,b)<< " over periodic boundaries"<<std::endl;
+				#endif //DEBUG
+		   }
+	   }
      }
    }
  }
