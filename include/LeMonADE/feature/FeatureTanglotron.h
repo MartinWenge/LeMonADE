@@ -36,8 +36,10 @@ along with LeMonADE.  If not, see <http://www.gnu.org/licenses/>.
 **/
 #include <iostream>
 #include <cmath>
+#include <map>
 
 #include <LeMonADE/feature/Feature.h>
+#include <LeMonADE/io/AbstractRead.h>
 #include <LeMonADE/updater/moves/MoveLocalSc.h>
 #include <LeMonADE/updater/moves/MoveBase.h>
 #include <LeMonADE/feature/FeatureBoltzmann.h>
@@ -65,8 +67,8 @@ public:
         rotorD=4
     };
    
-	//! Standard constructor- initially the tag is set to 5 and isTanglotron is set to false
-	TanglotronAttributeTag():isTanglotron(false),tag(5),tanglotronID(){}
+	//! Standard constructor- initially the tag is set to -1 and isTanglotron is set to false
+	TanglotronAttributeTag():isTanglotron(false),tag(-1),tanglotronID(-1){}
 
 	/**
 	* @brief setting boolean tag isTanglotron
@@ -88,17 +90,17 @@ public:
     void setTanglotronType(int attribute){ tag=attribute; }
     
 	//! getting enum tag tanglotronType
-	int32_t getTanglotronType() const {if(isTanglotron) return tag; else return -1;}
+	int32_t getTanglotronType() const {return tag;}
 	
 	/**
 	* @brief setting size_t tag tanglotronID
 	*
 	* @param id number of motor in vector TanglotronMotorUnits
 	**/
-    void setTanglotronID(size_t id){ tanglotronID=id; }
+    void setTanglotronID(int32_t id){ tanglotronID=id; }
     
     //! getting size_t tag tanglotronID
-	size_t getTanglotronID() const {if(isTanglotron) return tanglotronID; else return -1;}
+	int32_t getTanglotronID() const {return tanglotronID;}
 	
 private:
     //! Private Variable holding the bool if monomer is part of tanglotron
@@ -106,127 +108,10 @@ private:
 	//! Private variable holding the tanglotronType. Default is 5.
     int32_t tag;
     //! private variable holding the number of one tanglotron motor in the vector holding all motors
-    size_t tanglotronID;
+    int32_t tanglotronID;
 };
 
-/**
-* @class TanglotronMotor
-*
-* @brief set and get indices of stator and rotors of a tanglotron motor
-* 
-* @details One tanglotron motor is built out of one central stator monomer and
-* four surrounding rotor monomers which are connected each with the stator
-* and in pairs with each other (A and B as well as C and D).
-*
-**/
-class TanglotronMotor: public Feature
-{
-public:
-    
-    //! Standard constructor- initially all entries are set to NULL
-	TanglotronMotor():StatorIndex(0), RotorAIndex(0), RotorBIndex(0), RotorCIndex(0), RotorDIndex(0), LK(0), LK_progress(), angleSum(0.0), angle_progress(), angleSumAB(0.0), angleSumCD(0.0) {}
 
-    //! setter for tanglotron stator/rotors
-	void setTanglotronMotor(uint32_t idxStator, uint32_t idxA, uint32_t idxB, uint32_t idxC, uint32_t idxD);
-
-    //! getter for StatorIndex
-    uint32_t getIndexStator() const{return StatorIndex;}
-    //! getter for RotorAIndex
-    uint32_t getIndexRotorA() const{return RotorAIndex;}
-    //! getter for RotorBIndex
-    uint32_t getIndexRotorB() const{return RotorBIndex;}
-    //! getter for RotorCIndex
-	uint32_t getIndexRotorC() const{return RotorCIndex;}
-    //! getter for RotorDIndex
-    uint32_t getIndexRotorD() const{return RotorDIndex;}
-
-    //! getter for LK
-    int64_t getLK() const{return LK;}
-    //! getter for LK_progress
-    std::vector<int8_t> getLKprogress() const{return LK_progress;}
-
-    //! getter for angleSum
-    double getAngleSum() const{return angleSum;}
-    //! getter for angle_progress
-    std::vector<double> getAngleSumProgress() const{return angle_progress;}
-    //! getter for angleSumAB
-    double getAngleSumAB() const{return angleSumAB;}
-    //! getter for angleSumCD
-    double getAngleSumCD() const{return angleSumCD;}
-    
-    //! update counter of linking number
-    void addLK(int8_t halfLKtoAddOrSubstract);
-    //! update full tanglotron angle
-    void addAngle(double angle);
-    //! update angle stator/AB rotor unit
-    void addAngleAB(double angle){angleSumAB += angle;}
-    //! update angle stator/CD rotor unit
-    void addAngleCD(double angle){angleSumCD += angle;}
-    
-private:
-    
-    //! Index of the stator monomer of the tanglotron motor
-    uint32_t StatorIndex;
-    //! Index of the first (A) rotor monomer of the tanglotron motor
-    uint32_t RotorAIndex;
-    //! Index of the second (B) rotor monomer of the tanglotron motor
-    uint32_t RotorBIndex;
-    //! Index of the third (C) rotor monomer of the tanglotron motor
-    uint32_t RotorCIndex;
-    //! Index of the fourth (D) rotor monomer of the tanglotron motor
-    uint32_t RotorDIndex;
-    
-    //! Linking Number, which will be counted on the run
-    int64_t LK;
-    //! Vector, which holds all added or substracted half Linking Numbers stepwise
-    std::vector<int8_t> LK_progress;
-    
-    //! Linking Number, which will be counted on the run
-    double angleSum;
-    //! Vector, which holds current angleSum stepwise
-    std::vector<double> angle_progress;
-    //! motor angle, which will be counted on the run
-    double angleSumAB;
-    //! motor angle, which will be counted on the run
-    double angleSumCD;
-};
-
-/**
-* @details function to set the indices of the tanglotron motor unit
-*/
-void TanglotronMotor::setTanglotronMotor(uint32_t idxStator, uint32_t idxA, uint32_t idxB, uint32_t idxC, uint32_t idxD)
-{
-	StatorIndex = idxStator;
-	RotorAIndex = idxA;
-	RotorBIndex = idxB;
-    RotorCIndex = idxC;
-    RotorDIndex = idxD;
-}
-
-/**
-* @details function to add or substract half Linking Numbers
-*/
-void TanglotronMotor::addLK(int8_t halfLKtoAddOrSubstract)
-{
-    #ifdef DEBUG
-        std::cout << "in addLK with " << halfLKtoAddOrSubstract << std::endl;
-    #endif /*DEBUG*/
-	LK += halfLKtoAddOrSubstract;
-    LK_progress.push_back(halfLKtoAddOrSubstract);
-}
-
-/**
-* @details function to add or substract angle from angleSum
-*/
-void TanglotronMotor::addAngle(double angle)
-{
-	angleSum += angle;
-    angle_progress.push_back(angle);
-}
-
-
-// include readwrtie here, which uses the Tanglotron motor
-#include <LeMonADE/feature/FeatureTanglotronReadWrite.h>
 /**
 * @class FeatureTanglotron
 *
@@ -264,9 +149,24 @@ public:
     */
     template<class IngredientsType> void synchronize(IngredientsType& ingredients)
     {
-        #ifdef DEBUG
-            std::cout << "Number of Tanglotrons in Vector: " << getTanglotronMotors().size() << std::endl;
-        #endif /*DEBUG*/
+        if(tanglotronMotorMap.empty()){
+            tanglotronMotorMap.clear();
+        }
+        // loop over the system to find tanglotrons
+        for(uint32_t i=0; i<ingredients.getMolecules().size(); i++){
+            // check if monomer is part of a tanglotron
+            if(ingredients.getMolecules()[i].getIsTanglotron()){
+                // check if tanglotronID was already added to the tanglotronMotorMap
+                int32_t motorID(ingredients.getMolecules()[i].getTanglotronID());
+                auto map_it = tanglotronMotorMap.find(motorID);
+                // if motorID is new, add new vector to the map
+                if(map_it == tanglotronMotorMap.end()){
+                    tanglotronMotorMap[motorID] = std::vector<int32_t>(5,0);
+                }
+                // add the tanglotron type to the vector
+                tanglotronMotorMap[motorID].at(ingredients.getMolecules()[i].getTanglotronType()) = i;
+            }
+        }
     }
     
     //! check move with calculation of tanglotron potential energy
@@ -288,31 +188,9 @@ public:
     
     //! setter for Torque
     void setTorque(double torque_){Torque = torque_;}
-    
-    //! getter for TanglotronMotorUnits
-    const std::vector<TanglotronMotor>& getTanglotronMotors() const{return TanglotronMotorUnits;}
-    
-    /**
-    * add one tanglotron motor to TanglotronMotorUnits
-    * 
-    * @param oneTanglotronMotor_ one TanglotronMotor unit
-    * contains indices of one stator and four rotors
-    */
-    void addTanglotronMotor(TanglotronMotor oneTanglotronMotor_)
-    {
-        TanglotronMotorUnits.push_back(oneTanglotronMotor_);
-    }
-    
-    //! setter reference for TanglotronMotorUnits
-    std::vector<TanglotronMotor>& modifyTanglotronMotors(){return TanglotronMotorUnits;}
-    
-    /**
-    * returns size() of TanglotronMotorUnits
-    */
-    const size_t getTanglotronMotorsSize() const
-    {
-        return TanglotronMotorUnits.size();
-    }
+
+    //! getter for TanglotronMap
+    std::map<int32_t, std::vector <int32_t> > getTanglotronMotorMap() const{return tanglotronMotorMap;}
     
     template<class IngredientsType> 
     void exportRead(FileImport<IngredientsType>& fileReader);
@@ -326,13 +204,14 @@ private:
     
     //! torque
     double Torque;
-    //! indices of stators and rotors of all tanglotron motors in ingredients
-    std::vector<TanglotronMotor> TanglotronMotorUnits;
+
+    //! lookup for tanglotron motors
+    std::map<int, std::vector<int32_t> > tanglotronMotorMap;
     
     template<class IngredientsType> 
     double calculatePotential(const IngredientsType& ingredients, MoveLocalSc& move);
     
-    int sgn(double value);
+    template <typename T> int sgn(T val) {return (T(0) < val) - (val < T(0));}
 };
 
 /**
@@ -382,8 +261,7 @@ double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients,
     //we need two rotors -> use a vector
     std::vector <VectorInt3> rotorsPosition;
     //we need one stator
-    VectorInt3 statorPosition(ingredients.getMolecules()[ingredients.getTanglotronMotors()[motorID].getIndexStator()]);
-    
+    VectorInt3 statorPosition(ingredients.getMolecules()[tanglotronMotorMap.at(motorID).at(TanglotronAttributeTag::tanglotronType::stator)]);
     
     //add first moved rotor monomer to rotorsPosition
     rotorsPosition.push_back(ingredients.getMolecules()[movedMonomerIndex]);
@@ -392,19 +270,19 @@ double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients,
     switch(ingredients.getMolecules()[movedMonomerIndex].getTanglotronType()) // either 1=rotorA, 2=rotorB, 3=rotorC, 4=rotorD
     {
         case TanglotronAttributeTag::rotorA:
-            rotorsPosition.push_back(ingredients.getMolecules()[ingredients.getTanglotronMotors()[motorID].getIndexRotorB()]);
+            rotorsPosition.push_back(ingredients.getMolecules()[tanglotronMotorMap.at(motorID).at(TanglotronAttributeTag::tanglotronType::rotorB)]);
             break;
         
         case TanglotronAttributeTag::rotorB:
-            rotorsPosition.push_back(ingredients.getMolecules()[ingredients.getTanglotronMotors()[motorID].getIndexRotorA()]);
+            rotorsPosition.push_back(ingredients.getMolecules()[tanglotronMotorMap.at(motorID).at(TanglotronAttributeTag::tanglotronType::rotorA)]);
             break;
         
         case TanglotronAttributeTag::rotorC:
-            rotorsPosition.push_back(ingredients.getMolecules()[ingredients.getTanglotronMotors()[motorID].getIndexRotorD()]);
+            rotorsPosition.push_back(ingredients.getMolecules()[tanglotronMotorMap.at(motorID).at(TanglotronAttributeTag::tanglotronType::rotorD)]);
             break;
         
         case TanglotronAttributeTag::rotorD:
-            rotorsPosition.push_back(ingredients.getMolecules()[ingredients.getTanglotronMotors()[motorID].getIndexRotorC()]);
+            rotorsPosition.push_back(ingredients.getMolecules()[tanglotronMotorMap.at(motorID).at(TanglotronAttributeTag::tanglotronType::rotorC)]);
             break;
         
         default:
@@ -445,20 +323,233 @@ double FeatureTanglotron::calculatePotential(const IngredientsType& ingredients,
     return (exp(-(sgn(move.getDir()*normal) * Torque * angle)));
 }
 
+
 /**
-* calculate signum function
+*
+* @class ReadTanglotron
+*
+* @brief reading #!tanglotrons from bfm file
 * 
-* @param value value to decide if it is above or below 0
-*/
-int FeatureTanglotron::sgn(double value)
+* @details Form:
+* #!tanglotrons
+* indexStator indexRotorA indexRotorB indexRotorC indexRotorD
+*
+* @tparam IngredientsType
+**/
+
+template<class IngredientsType>
+class ReadTanglotron: public ReadToDestination<IngredientsType>
 {
-    if(value>0)
-        return 1;
-    else if(value==0)
-        return 0;
-    else
-        return -1;
+    public:
+        //! constructor
+        ReadTanglotron(IngredientsType& destination): ReadToDestination<IngredientsType>(destination){}
+
+        void execute();
+};
+
+/**
+* @class WriteTanglotron
+*
+* @brief writing #!tanglotrons to bfm file
+* 
+* @details Form:
+* #!tanglotrons
+* indexStator indexRotorA indexRotorB indexRotorC indexRotorD
+*
+* @tparam IngredientsType
+**/
+template<class IngredientsType>
+class WriteTanglotron: public AbstractWrite<IngredientsType>
+{
+    public:
+        //! constructor
+        WriteTanglotron(const IngredientsType& src):AbstractWrite<IngredientsType>(src){this->setHeaderOnly(true);}
+  
+        /**
+        * writeStream
+        * 
+        * @brief getTanglotronMotors and write it to bfm file
+        */ 
+        void writeStream(std::ostream& strm)
+        {
+            const IngredientsType& ingredients=(this->getSource());
+            
+            //add 1 to indices of tanglotron monomers because of different index
+            //definitions of bfm and LeMonADE
+            strm << "#!tanglotrons\n";
+
+            std::map<int, std::vector<int32_t> > tanglotronMotorMap;
+            // loop over the system to find tanglotrons
+            for(uint32_t i=0; i<ingredients.getMolecules().size(); i++){
+                // check if monomer is part of a tanglotron
+                if(ingredients.getMolecules()[i].getIsTanglotron()){
+                    // check if tanglotronID was already added to the tanglotronMotorMap
+                    int32_t motorID(ingredients.getMolecules()[i].getTanglotronID());
+                    auto map_it = tanglotronMotorMap.find(motorID);
+                    // if motorID is new, add new vector to the map
+                    if(map_it == tanglotronMotorMap.end()){
+                        tanglotronMotorMap[motorID] = std::vector<int32_t>(5,0);
+                    }
+                    // add the tanglotron type to the vector
+                    tanglotronMotorMap[motorID].at(ingredients.getMolecules()[i].getTanglotronType()) = i;
+                }
+            }
+
+            for(auto const& motor: tanglotronMotorMap){
+                strm << motor.second.at(0)+1 << " ";
+                strm << motor.second.at(1)+1 << " ";
+                strm << motor.second.at(2)+1 << " ";
+                strm << motor.second.at(3)+1 << " ";
+                strm << motor.second.at(4)+1 << "\n";
+            }
+            strm << "\n";
+        }
+};
+
+/**
+* @class ReadTorque
+*
+* @brief reading #!torque from bfm file
+* 
+* @details Form: #!torque=10
+* 
+* @tparam IngredientsType
+**/
+template<class IngredientsType>
+class ReadTorque: public ReadToDestination<IngredientsType>
+{
+    public:
+        //! constructor
+        ReadTorque(IngredientsType& destination):ReadToDestination<IngredientsType>(destination){}
+        
+        void execute();
+};
+
+/**
+* @class WriteTorque
+*
+* @brief writing #!torque to bfm file
+* 
+* @details Form: #!torque=10
+*
+* @tparam IngredientsType
+**/
+template<class IngredientsType>
+class WriteTorque: public AbstractWrite<IngredientsType>
+{
+    public:
+        //! constructor
+        WriteTorque(const IngredientsType& src):AbstractWrite<IngredientsType>(src){this->setHeaderOnly(true);}
+  
+        /**
+        * writeStream
+        * 
+        * @brief getTorque and write it to bfm file
+        */ 
+        void writeStream(std::ostream& strm)
+        {
+            const IngredientsType& ingredients=(this->getSource());
+            
+            strm << "#!torque=" << ingredients.getTorque() << "\n\n";
+        }
+};
+
+
+/////////////MEMBER IMPLEMENTATIONS ////////////////////////////////////////////
+/**
+* ReadTanglotron::execute()
+* 
+* @brief reading tanglotrons and add them to private vector TanglotronMotorUnits
+*/
+template<class IngredientsType>
+void ReadTanglotron<IngredientsType>::execute()
+{
+    std::cout << "reading #!tanglotrons ...\n";
+    
+    uint32_t idxStat, idxA, idxB, idxC, idxD;
+    int32_t tanglotronID(0);
+    std::string line;
+    std::streampos previous;
+    
+    std::getline(this->getInputStream(),line);
+    previous=(this->getInputStream()).tellg();
+    getline(this->getInputStream(),line);
+    
+    while(!line.empty() && !((this->getInputStream()).fail())){
+
+        //stop at next Read and set the get-pointer to the position before the Read
+        if(this->detectRead(line)){
+            (this->getInputStream()).seekg(previous);
+            break;
+        }
+  
+        std::stringstream stream(line);
+        
+        //read index of stator, throw exception if extraction fails
+        stream >> idxStat >> idxA >> idxB >> idxC >> idxD;
+        if(stream.fail()){
+            std::stringstream messagestream;
+            messagestream << "ReadTanglotron<IngredientsType>::execute() -> Could not read indices";
+            throw std::runtime_error(messagestream.str());
+        }
+        
+
+        //if streaming worked set the TanglotronMotor with indices -1 because of
+        //different index definitions of bfm and LeMonADE and add ist to private
+        //vector TanglotronMotorUnits
+        if(!stream.fail()){
+            this->getDestination().modifyMolecules()[idxStat-1].setIsTanglotron(true);
+            this->getDestination().modifyMolecules()[idxStat-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::stator);
+            this->getDestination().modifyMolecules()[idxStat-1].setTanglotronID(tanglotronID);
+            this->getDestination().modifyMolecules()[idxA-1].setIsTanglotron(true);
+            this->getDestination().modifyMolecules()[idxA-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorA);
+            this->getDestination().modifyMolecules()[idxA-1].setTanglotronID(tanglotronID);
+            this->getDestination().modifyMolecules()[idxB-1].setIsTanglotron(true);
+            this->getDestination().modifyMolecules()[idxB-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorB);
+            this->getDestination().modifyMolecules()[idxB-1].setTanglotronID(tanglotronID);
+            this->getDestination().modifyMolecules()[idxC-1].setIsTanglotron(true);
+            this->getDestination().modifyMolecules()[idxC-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorC);
+            this->getDestination().modifyMolecules()[idxC-1].setTanglotronID(tanglotronID);
+            this->getDestination().modifyMolecules()[idxD-1].setIsTanglotron(true);
+            this->getDestination().modifyMolecules()[idxD-1].setTanglotronType(TanglotronAttributeTag::tanglotronType::rotorD);
+            this->getDestination().modifyMolecules()[idxD-1].setTanglotronID(tanglotronID);
+
+            tanglotronID++;
+            
+            std::getline(this->getInputStream(),line);
+        }
+        
+        //otherwise throw an exception
+        else{
+            std::stringstream messagestream;
+            messagestream << "ReadTanglotron<IngredientsType>::execute()\n" << "Could not read indices in #!tanglotrons";
+            throw std::runtime_error(messagestream.str());
+    
+        }
+    }    
 }
+
+/**
+* ReadTorque::execute()
+* 
+* @brief reading torque and set private variable Torque
+*/
+template<class IngredientsType>
+void ReadTorque<IngredientsType>::execute()
+{
+    std::cout << "reading #!torque...";
+    
+    double torque;
+    
+    if(this->getInputStream() >> torque)
+    { 
+        this->getDestination().setTorque(torque);
+        std::cout << torque << std::endl;
+    }
+    else
+        throw std::runtime_error("ReadTorque<IngredientsType>::execute()\n Could not read torque");    
+}
+
 
 /**
 * read value of torque and indices of tanglotron motors from bfm file
