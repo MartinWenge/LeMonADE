@@ -137,7 +137,7 @@ public:
     * @param variableCalculatePotential to decide if tanglotron potential should
     * be calculated or not (default true)
     */
-    FeatureTanglotron():variableCalculatePotential(true) {}
+    FeatureTanglotron():variableCalculatePotential(true), Torque(0.0) {}
     
     //! default empty destructor
     virtual ~FeatureTanglotron(){}
